@@ -1,0 +1,13 @@
+[
+  {
+    "item": {
+      "itemId": "checkers.status",
+      "mappings": [
+        {
+          "name": "CC_STATUS_OK",
+          "value": 1
+        }
+      ]
+    }
+  }
+]

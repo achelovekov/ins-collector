@@ -1,0 +1,8 @@
+{
+  "ESHost": "10.62.186.54",
+  "ESPort": "9200",
+  "ESIndex": "ins-data",
+  "INSPathsDefinitions": "INSPathDefinitions.json",
+  "FilterFile" : "filter.json",
+  "EnrichFile" : "enrich.json"
+}

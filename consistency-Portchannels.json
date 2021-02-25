@@ -1,0 +1,85 @@
+[
+    {
+      "Node": [
+        {
+          "NodeName": "result",
+          "ToDive": false,
+          "ToCombine": false
+        }
+      ]
+    },
+    {
+      "Node": [
+        {
+          "NodeName": "checkers",
+          "ToDive": false,
+          "ToCombine": false
+        }
+      ]
+    },
+    {
+        "Node": [
+          {
+            "NodeName": "platformDetails",
+            "ToDive": true,
+            "ToCombine": false
+          },
+          {
+            "NodeName": "passedEntities",
+            "ToDive": false,
+            "ToCombine": false
+          }
+        ]
+    },
+    {
+        "Node": [
+          {
+            "NodeName": "key",
+            "ToDive": true,
+            "ToCombine": false
+          },
+          {
+            "NodeName": "value",
+            "ToDive": false,
+            "ToCombine": false
+          }
+        ]
+    },
+    {
+        "Node": [
+          {
+            "NodeName": "entityDetails",
+            "ToDive": true,
+            "ToCombine": false
+          },
+          {
+            "NodeName": "checkedProperties",
+            "ToDive": false,
+            "ToCombine": false
+          }
+        ]
+    },
+    {
+        "Node": [
+          {
+            "NodeName": "tahoe",
+            "ToDive": false,
+            "ToCombine": false
+          }
+        ]
+    },
+    {
+        "Node": [
+          {
+            "NodeName": "egrNumPaths_Sw_Hw",
+            "ToDive": false,
+            "ToCombine": true
+          },
+          {
+            "NodeName": "egrMembers_Sw_Hw",
+            "ToDive": false,
+            "ToCombine": false
+          }
+        ]
+    }
+]

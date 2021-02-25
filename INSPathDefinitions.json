@@ -1,0 +1,12 @@
+[
+    {
+        "key": "show consistency-checker membership port-channels detail",
+        "jsonNative": false,
+        "jsonText": true,
+        "paths": [
+            {
+                "path": "consistency-Portchannels.json"
+            }    
+        ]
+    }
+]

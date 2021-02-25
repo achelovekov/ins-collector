@@ -1,0 +1,10 @@
+[
+  {
+    "host": {
+      "url": "http://10.62.130.43:8080/ins",
+      "hostname": "site-1-ac-1",
+      "username": "admin",
+      "password": "cisco!123"
+    }
+  }
+]
