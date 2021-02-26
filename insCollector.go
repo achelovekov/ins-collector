@@ -29,6 +29,14 @@ type INSAPIResponseJSONText struct {
 	} `json:"ins_api"`
 }
 
+type INSAPIResponseJSONNative struct {
+	Jsonrpc string `json:"jsonrpc"`
+	Result  struct {
+		Body map[string]interface{} `json:"body"`
+	} `json:"result"`
+	ID int `json:"id"`
+}
+
 type Inventory []struct {
 	Host struct {
 		URL      string `json:"url"`
@@ -146,6 +154,7 @@ func worker(src map[string]interface{}, ESClient cu.ESClient, ESIndex string, pa
 	cu.FlattenMap(src, path, pathIndex, pathPassed, mode, header, &buf, filter, enrich)
 	for _,v := range(buf){
 		v["node_id_str"] = hostname
+		cu.PrettyPrint(v)
 	}
 	cu.ESPush(ESClient, ESIndex, buf)
 }
@@ -220,34 +229,50 @@ func Initialize(configFile string, inventoryFile string) (cu.ESClient, Config, I
 	return ESClient, Config, Inventory, INSPaths, Filter, Enrich
 }
 
-func (r *Request) Get(requestString string) map[string]interface{} {
+func (r *Request) Get(requestString string, JSONText bool, JSONNative bool) map[string]interface{} {
 	
 	payload := strings.NewReader(requestString)
 
 	req, _ := http.NewRequest("POST", r.URL, payload)
 
-	req.Header.Add("Content-Type", "application/json")
+	if JSONText {
+		req.Header.Add("Content-Type", "application/json")
+	} else if JSONNative {
+		req.Header.Add("Content-Type", "application/json-rpc")
+	}
+	
 	req.Header.Add("Cache-Control", "no-cache")
 	req.SetBasicAuth(r.Username, r.Password)
 
 	res, _ := http.DefaultClient.Do(req)
-
 	
 	defer res.Body.Close()
 
 	responseBody, _ := ioutil.ReadAll(res.Body)
 	
-	var INSAPIResponseJSONText INSAPIResponseJSONText
-	err := json.Unmarshal(responseBody, &INSAPIResponseJSONText)
-	if err != nil {
-		panic(err)
-	}
-
 	body := make(map[string]interface{})
-	err = json.Unmarshal([]byte(INSAPIResponseJSONText.INSAPI.Outputs.Output.Body), &body)
 
-	if err != nil {
-		panic(err)
+	if JSONText {
+		var INSAPIResponseJSONText INSAPIResponseJSONText
+		err := json.Unmarshal(responseBody, &INSAPIResponseJSONText)
+		if err != nil {
+			panic(err)
+		}
+
+		err = json.Unmarshal([]byte(INSAPIResponseJSONText.INSAPI.Outputs.Output.Body), &body)
+
+		if err != nil {
+			panic(err)
+		}
+	} else if JSONNative {
+		var INSAPIResponseJSONNative INSAPIResponseJSONNative
+		err := json.Unmarshal(responseBody, &INSAPIResponseJSONNative)
+		if err != nil {
+			panic(err)
+		}
+
+		body = INSAPIResponseJSONNative.Result.Body
+
 	}
 
 	return body
@@ -257,6 +282,9 @@ func KeyTransform(Key string, JSONText bool, JSONNative bool) string {
 	if JSONText {
 		Key = "{\n  \"ins_api\": {\n    \"version\": \"1.0\",\n    \"type\": \"cli_show_ascii\",\n    \"chunk\": \"0\",\n    \"sid\": \"sid\",\n    \"input\": \"" + Key + " \",\n    \"output_format\": \"json\"\n  }\n}"
 	}
+	if JSONNative {
+		Key = "[\n  {\n    \"jsonrpc\": \"2.0\",\n    \"method\": \"cli\",\n    \"params\": {\n      \"cmd\": \"" + Key + "\",\n      \"version\": 1\n    },\n    \"id\": 1\n  }\n]"
+	}
 
 	return Key
 }
@@ -264,7 +292,7 @@ func KeyTransform(Key string, JSONText bool, JSONNative bool) string {
 func (ig *INSGeneric) Loop(r *Request) {
 	for _, INSPath := range(ig.INSPaths){
 		INSPath.Key = KeyTransform(INSPath.Key,INSPath.JSONText,INSPath.JSONNative)
-		src := r.Get(INSPath.Key)
+		src := r.Get(INSPath.Key,INSPath.JSONText,INSPath.JSONNative)
 		for _, path := range(INSPath.Paths){
 			src = cu.CopyMap(src)
 			worker(src, ig.ESClient, ig.Config.ESIndex, path, ig.Mode, ig.Filter, ig.Enrich, r.Hostname)

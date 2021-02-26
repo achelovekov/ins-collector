@@ -8,5 +8,15 @@
                 "path": "consistency-Portchannels.json"
             }    
         ]
+    },
+    {
+        "key": "show hardware internal forwarding table utilization",
+        "jsonNative": true,
+        "jsonText": false,
+        "paths": [
+            {
+                "path": "fwTable-Utilization.json"
+            }    
+        ]
     }
 ]

@@ -1,0 +1,20 @@
+[
+    {
+      "Node": [
+        {
+          "NodeName": "TABLE_module",
+          "ToDive": false,
+          "ToCombine": false
+        }
+      ]
+    },
+    {
+      "Node": [
+        {
+          "NodeName": "ROW_module",
+          "ToDive": false,
+          "ToCombine": false
+        }
+      ]
+    }
+]
