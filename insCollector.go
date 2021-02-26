@@ -10,6 +10,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"sync"
 )
 
 type INSAPIResponseJSONText struct {
@@ -280,25 +281,18 @@ func (ig *INSGeneric) HostLoop(r *Request) {
 }
 
 func main() {
-	ESClient, Config, Inventory, INSPaths, Filter, Enrich := Initialize("config.json","inventory.json")
 
+	var wg sync.WaitGroup
+
+	ESClient, Config, Inventory, INSPaths, Filter, Enrich := Initialize("config.json","inventory.json")
 	INSGeneric := &INSGeneric{Config: Config, INSPaths: INSPaths, ESClient: ESClient, Filter: Filter, Enrich: Enrich, Mode: 1} 
 
-/* 	var url string = "http://10.62.130.43:8080/ins"
-	var hostname string = "site-1-ac-1"
-	var username = "admin"
-	var password = "cisco!123" */
-
-/* 	Request := &Request{URL: url, Hostname: hostname, Username: username, Password: password}
-	
-	for {
-		INSGeneric.Loop(Request)
-		time.Sleep(4 * time.Second)
-	} */
+	wg.Add(len(Inventory))
 
 	for _, v := range(Inventory){
 		Request := &Request{URL: v.Host.URL, Hostname: v.Host.Hostname, Username: v.Host.Username, Password: v.Host.Password}
-		INSGeneric.HostLoop(Request)
+		go INSGeneric.HostLoop(Request)
 	}
 
+	wg.Wait()
 }

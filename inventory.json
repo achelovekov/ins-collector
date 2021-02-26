@@ -6,5 +6,13 @@
       "username": "admin",
       "password": "cisco!123"
     }
+  },
+  {
+    "host": {
+      "url": "http://10.62.130.44:8080/ins",
+      "hostname": "site-1-ac-2",
+      "username": "admin",
+      "password": "cisco!123"
+    }
   }
 ]
