@@ -73,7 +73,7 @@ type INSGeneric struct {
 }
 
 type INSPathsDefinition struct {
-	cu.PathsDefinition
+	cu.PathDefinition
 	JSONNative bool   `json:"jsonNative"`
 	JSONText   bool   `json:"jsonText"`
 }
@@ -154,7 +154,6 @@ func worker(src map[string]interface{}, ESClient cu.ESClient, ESIndex string, pa
 	cu.FlattenMap(src, path, pathIndex, pathPassed, mode, header, &buf, filter, enrich)
 	for _,v := range(buf){
 		v["node_id_str"] = hostname
-		cu.PrettyPrint(v)
 	}
 	cu.ESPush(ESClient, ESIndex, buf)
 }
