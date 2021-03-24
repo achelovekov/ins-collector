@@ -46,11 +46,6 @@ type Inventory []struct {
 	} `json:"host"`
 }
 
-type Config struct {
-	cu.Config
-	InventoryFile string  `json:"InventoryFile"`
-}
-
 type KeysDefinition []KeyDefinition
 type KeyDefinition struct {
 	cu.KeyDefinition
@@ -71,10 +66,9 @@ type PathOptions struct {
 	JsonText bool
 }
 
-
 type MetaData struct {
-	Config   Config
-	KeysMap KeysMap
+	Config   cu.Config
+	KeysMap  KeysMap
 	ESClient cu.ESClient
 	Filter   cu.Filter
 	Enrich   cu.Enrich
@@ -87,6 +81,25 @@ type Request struct {
 	RequestString string
 	Username string
 	Password string	 
+}
+
+
+func LoadInventory(fineName string) Inventory {
+	var Inventory Inventory
+	InventoryFile, err := os.Open(fineName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer InventoryFile.Close()
+
+	InventoryFileBytes, _ := ioutil.ReadAll(InventoryFile)
+
+	err = json.Unmarshal(InventoryFileBytes, &Inventory)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return Inventory
 }
 
 func LoadKeysMap(fileName string) KeysMap {
@@ -142,77 +155,6 @@ func LoadKeysMap(fileName string) KeysMap {
 	}
 
 	return KeysMap
-}
-
-func Initialize(configFile string) (cu.ESClient, Config, Inventory, KeysMap, cu.Filter, cu.Enrich) {
-
-	var Config Config
-	var Inventory Inventory
-	var KeysMap KeysMap
-	var Filter cu.Filter
-	var Enrich cu.Enrich
-
-
-	ConfigFile, err := os.Open(configFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer ConfigFile.Close()
-
-	ConfigFileBytes, _ := ioutil.ReadAll(ConfigFile)
-
-	err = json.Unmarshal(ConfigFileBytes, &Config)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	InventoryFile, err := os.Open(Config.InventoryFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer InventoryFile.Close()
-
-	InventoryFileBytes, _ := ioutil.ReadAll(InventoryFile)
-
-	err = json.Unmarshal(InventoryFileBytes, &Inventory)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	KeysMap = LoadKeysMap(Config.KeysDefinitionFile)
-
-	FilterFile, err := os.Open(Config.FilterFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer FilterFile.Close()
-
-	FilterFileBytes, _ := ioutil.ReadAll(FilterFile)
-
-	err = json.Unmarshal(FilterFileBytes, &Filter)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	EnrichFile, err := os.Open(Config.EnrichFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer ConfigFile.Close()
-
-	EnrichFileBytes, _ := ioutil.ReadAll(EnrichFile)
-
-	err = json.Unmarshal(EnrichFileBytes, &Enrich)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	ESClient, error := cu.ESConnect(Config.ESHost, Config.ESPort)
-	if error != nil {
-		log.Fatalf("error: %s", error)
-	}
-
-	return ESClient, Config, Inventory, KeysMap, Filter, Enrich
 }
 
 func (r *Request) Get(requestString string, JsonText bool, JsonNative bool) map[string]interface{} {
@@ -312,7 +254,13 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	ESClient, Config, Inventory, KeysMap, Filter, Enrich := Initialize("config.json")
+	Config, Filter, Enrich := cu.Initialize("config.json")
+	Inventory := LoadInventory("inventory.json")
+	KeysMap := LoadKeysMap(Config.KeysDefinitionFile)
+	ESClient, error := cu.ESConnect(Config.ESHost, Config.ESPort)
+	if error != nil {
+		log.Fatalf("error: %s", error)
+	}
 	MetaData := &MetaData{Config: Config, KeysMap: KeysMap, ESClient: ESClient, Filter: Filter, Enrich: Enrich, Mode: 1} 
 
 	wg.Add(len(Inventory))
