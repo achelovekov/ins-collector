@@ -2,7 +2,8 @@
   "ESHost": "10.62.186.54",
   "ESPort": "9200",
   "ESIndex": "ins-data",
-  "INSPathsDefinitions": "INSPathDefinitions.json",
+  "KeysDefinitionFile": "KeysDefinitionFile.json",
   "FilterFile" : "filter.json",
-  "EnrichFile" : "enrich.json"
+  "EnrichFile" : "enrich.json",
+  "InventoryFile": "inventory.json"
 }
